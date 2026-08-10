@@ -1,0 +1,241 @@
+{
+  "name": "ai workflow for send emails on time",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a Google Calendar and Email Automation Agent.\n\nYour job is to:\n\n1. Read and understand Google Calendar events.\n2. Identify the event title, date, time, attendees, and relevant details.\n3. When an email needs to be sent, create a clear and professional email using the calendar information.\n4. Send the email using the Gmail tool.\n5. Never invent missing information such as email addresses, dates, times, or meeting details.\n6. If required information is missing, ask for it instead of guessing.\n7. Keep emails short, professional, and relevant.\n8. Before sending, verify the recipient, subject, and email content.\n9. Do not send duplicate emails for the same event unless explicitly requested.\n\nFor meeting reminders, include:\n\n* Meeting name\n* Date and time\n* Meeting/link details if available\n* A short reminder message\n\nUse the available Google Calendar and Gmail tools whenever required. Your goal is to automate calendar-based email communication accurately and safely.\nsend the mails on time as per the given input:{{ $now }}"
+        }
+      },
+      "id": "4226c157-c617-4f11-aae2-6dafaad8dd74",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 10000
+        }
+      },
+      "id": "5c146f89-101c-44a1-90cc-60033f2b1988",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        208
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "Xysdqi8YQXG0mKiR",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "id": "d5aacf77-bac1-468f-af4f-041c19bf6d2c",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        64,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1caHRReu1jmRY0Jwh7h6PO5V08Ae-cLcvo9kJfg8_Ek0",
+          "mode": "list",
+          "cachedResultName": "mail contact",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1caHRReu1jmRY0Jwh7h6PO5V08Ae-cLcvo9kJfg8_Ek0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "c8dad202-b224-4c1a-8c4d-5a1755d68f30",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GJcaWv7BUBhjh8TJ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Append_n8n_Attribution', ``, 'boolean') }}",
+          "senderName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender_Name', ``, 'string') }}"
+        }
+      },
+      "id": "82033de2-d9f7-48d8-969c-4ba8f13a2847",
+      "name": "send email",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        208
+      ],
+      "webhookId": "9fe3c687-c893-4b47-b623-6a25eac6d599",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hpXG8sB3vw3G93mn",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "karthik20020428@gmail.com",
+          "mode": "list",
+          "cachedResultName": "karthik20020428@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ],
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "id": "e9bd12aa-1670-4edc-993c-16d6ef1dea58",
+      "name": "Create an event in Google Calendar",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        208
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "A0I2NlXNmquFIbit",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        -48
+      ],
+      "id": "97182202-64b9-4250-b0e8-a40daa02dd9b",
+      "name": "When chat message received",
+      "webhookId": "b0b1d9ee-c664-468c-a82c-e3bc34b0d795"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b3fe8ce3-1e81-49bf-9e8b-d437564833e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2801141103f0786341f792b5cad9285bc25679973e13b475108380ef2f234ed9"
+  },
+  "nodeGroups": [],
+  "id": "KIbOavHKbmtFUT3D",
+  "tags": []
+}
