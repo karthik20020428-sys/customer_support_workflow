@@ -1,0 +1,245 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        -16
+      ],
+      "id": "73cb4a71-0c9f-439d-b019-9e3b0c5a25d6",
+      "name": "When chat message received",
+      "webhookId": "66c2ffcb-2d76-4b9e-bfb5-008ec02826e5"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant\nyou create the description and send to the next agent"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "60edd2c5-b5c0-46d5-bea1-badbd999aa70",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\nyou take the description from input and describe it how to make it"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        640,
+        -16
+      ],
+      "id": "025b5f77-3265-48bd-8c81-647a1cffdd2e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\nyou are an agent to create the clear cut documentation from the input"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1024,
+        -16
+      ],
+      "id": "9bb9ad42-cc07-4aa1-b589-bd01eac10324",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        208
+      ],
+      "id": "0a9edc98-c8dc-4dd3-966c-b5466b7338bd",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VBE4sgrw7OMtAzQM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        224
+      ],
+      "id": "ac60df48-a211-448e-b0fa-0e19b8f45b05",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "adENo5RwDw0NGewk",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        208
+      ],
+      "id": "fc1759d2-4475-43c7-9dad-6d527f2a7b1c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "adENo5RwDw0NGewk",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        -16
+      ],
+      "id": "6cee5fbe-d7ad-4580-a3bd-6096bebe24a8",
+      "name": "Convert to File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6431a905-1feb-447a-9bfe-edb2f018c2ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c5d1a75aaad914bf156641453b1d022d2430cd404a162ca9d046e6af15511f93"
+  },
+  "nodeGroups": [],
+  "id": "VhflS3SzEaITUryL",
+  "tags": []
+}
