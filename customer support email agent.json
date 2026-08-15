@@ -1,0 +1,520 @@
+{
+  "name": "customer support email agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "id": "3557df74-156c-4685-914b-eab4fa5351ec",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -176
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.subject }}\n\n{{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "High Priority",
+              "description": "Urgent or time-sensitive emails that need immediate attention."
+            },
+            {
+              "category": "Finance",
+              "description": "Invoices, payments, billing, receipts, and other financial matters."
+            },
+            {
+              "category": "Customer Support",
+              "description": "Customer questions, complaints, help requests, and support issues."
+            },
+            {
+              "category": "Promotion",
+              "description": "Marketing, promotional offers, newsletters, and advertisements."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3d2057a1-cefe-4fc2-9df1-c348cc2ce42e",
+      "name": "Text Classifier",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "720d1f42-68e4-443d-8409-6c8dbebbd750",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        272
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "adENo5RwDw0NGewk",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "id": "7e40ccb6-7591-4c5c-ab14-256ffaa53f0c",
+      "name": "Get many labels",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        48
+      ],
+      "webhookId": "a4da93f6-eb2f-4629-8605-2c256e0512a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.snippet }}\n\n{{ $('Gmail Trigger').item.json.subject }}",
+        "options": {
+          "systemMessage": "you are the gmail automated reply agent so take the information according to input of mail and read it carefully and you have to reply as per the message\nand do not send too many messages send one accurate message"
+        }
+      },
+      "id": "e7b88075-af05-43c6-b391-a7a2cb2b2032",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1488,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "0292ef1e-a643-49c4-afd9-5c8df8a19530",
+      "name": "Reply to a message in Gmail",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        176
+      ],
+      "webhookId": "763a41f8-751c-4be3-961d-e46818fe09bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.snippet }}\n\n{{ $('Gmail Trigger').item.json.Subject }}",
+        "options": {
+          "systemMessage": "You are an agent to track and reply the high priority message and do not send too many messages send one accurate message\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1376,
+        -768
+      ],
+      "id": "a7d7a305-07e3-472f-87ad-589174dd954c",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.snippet }}\n\n{{ $('Gmail Trigger').item.json.Subject }}",
+        "options": {
+          "systemMessage": "You are an agent that takes customer support messages and analyze the message reply according to the message. do not send too many messages send one accurate message"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1392,
+        -192
+      ],
+      "id": "7224f7e3-4b88-4a81-81a7-30abb844649d",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -64
+      ],
+      "id": "9cc954a8-ca24-4920-982c-7907e3e52ec5",
+      "name": "Reply to a message in Gmail1",
+      "webhookId": "b9a56354-5a15-4ff1-a0bd-852a95e01583",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        -144
+      ],
+      "id": "0bd9221f-ff94-4b82-86aa-4551d8a40ed9",
+      "name": "Get many labels1",
+      "webhookId": "206019f0-cdbd-4170-b793-aea016f1216f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        -368
+      ],
+      "id": "6ee5d1ad-5eef-498a-b831-34fb36999dc7",
+      "name": "Get many labels2",
+      "webhookId": "58ed97ec-35ad-4699-aa28-60f718a28885",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Gmail Trigger').item.json.snippet }}\n\n{{ $('Gmail Trigger').item.json.Subject }}",
+        "options": {
+          "systemMessage": "you are the finance agent to analyze and replay only finance messages and mails.do not reply too many times send one message"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1424,
+        -448
+      ],
+      "id": "75b6e94f-e42a-44a2-a348-02dba089e5eb",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        -240
+      ],
+      "id": "48c6fc94-9364-4293-8a21-4f3803004a9e",
+      "name": "Reply to a message in Gmail2",
+      "webhookId": "c7d23cad-465d-4bce-baed-be2aec058c16",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1776,
+        -640
+      ],
+      "id": "ce759bd0-51fb-4a02-a235-ea210b0884b0",
+      "name": "Reply to a message in Gmail3",
+      "webhookId": "ab6bcf23-7c4a-424e-a31c-4ea1a8a7937c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        784,
+        -592
+      ],
+      "id": "5213c7b2-075b-4164-956c-f0e5088a5890",
+      "name": "Get many labels3",
+      "webhookId": "c14cec2d-f326-4a19-b430-cb9f3f61acc3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "f6CehkKdD3ohZgJT",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Get many labels3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many labels2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many labels1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message in Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message in Gmail2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to a message in Gmail3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d8bb02d9-5292-4f44-b8b7-f94c5365e949",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c5d1a75aaad914bf156641453b1d022d2430cd404a162ca9d046e6af15511f93"
+  },
+  "nodeGroups": [],
+  "id": "jVUNbWbzntRXY9kj",
+  "tags": []
+}
