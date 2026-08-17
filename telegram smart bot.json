@@ -1,0 +1,200 @@
+{
+  "name": "telegram smart bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "de2456e1-6809-4e87-983a-7f304019fd3f",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -64,
+        16
+      ],
+      "webhookId": "5fc75158-3288-41b5-a5dd-28282f8da962",
+      "credentials": {
+        "telegramApi": {
+          "id": "e21GE5IoUnO9mcWT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message?.text || $json.message?.caption || \"The user sent a message with no text content. Ask them to send a text message.\" }}",
+        "options": {
+          "systemMessage": "=You are a helpful assistant. Today's date is {{ $now.toFormat('cccc, LLLL d, yyyy') }}. Answer whatever the user asks. When the user asks about current events, breaking news, today's news, or stock/market updates, ALWAYS use the tavily_web_search tool with topic \"news\" and time_range \"day\" (or \"week\"), and include the current date/year in the query. Do not answer time-sensitive questions from memory — always search first. Summarize the search results with sources."
+        }
+      },
+      "id": "6694df7b-c101-4e4e-8daa-cd8193bde884",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 2000
+        }
+      },
+      "id": "5335e132-6f10-4b63-9ad7-b0849bc4f58c",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        48,
+        176
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "JLvWgUcQulC56tqL",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search the web for current, factual and up-to-date information, including news, stock market and finance updates. Provide a concise search query as the {query} value; include the current year or exact date for time-sensitive questions. Results are drawn from recent news sources.",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"{query}\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 5,\n  \"topic\": \"news\",\n  \"time_range\": \"week\",\n  \"include_answer\": true,\n  \"include_raw_content\": false,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_favicon\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": [],\n  \"country\": \"united states\",\n  \"auto_parameters\": false,\n  \"exact_match\": false,\n  \"include_usage\": false,\n  \"safe_search\": false\n}",
+        "options": {}
+      },
+      "id": "000b92ca-16d9-42f5-b547-792d9c864e1b",
+      "name": "tavily_web_search",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        368,
+        192
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "m8Hhj80LHIEXvNOO",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $(\"Telegram Trigger\").item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3a492efd-3e6e-4577-8951-55eda6e8d96f",
+      "name": "Send Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        -48
+      ],
+      "webhookId": "d00652bf-cba3-4555-821b-b616e448615b",
+      "credentials": {
+        "telegramApi": {
+          "id": "e21GE5IoUnO9mcWT",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        192
+      ],
+      "id": "eb5deb30-fddc-4bf7-b39e-4ca3c41c5c04",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tavily_web_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1a44729c-2fca-4244-9d9c-8e0f08d3081f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c5d1a75aaad914bf156641453b1d022d2430cd404a162ca9d046e6af15511f93"
+  },
+  "nodeGroups": [],
+  "id": "GUasq02nGmoxyLi5",
+  "tags": []
+}
